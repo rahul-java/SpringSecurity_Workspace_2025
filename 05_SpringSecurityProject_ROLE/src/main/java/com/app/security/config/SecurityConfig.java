@@ -49,11 +49,16 @@ public class SecurityConfig {
 				.anyRequest().authenticated());
 		*/
 		
-		httpSecurity.authorizeHttpRequests(request->request.anyRequest().permitAll());
+		//httpSecurity.authorizeHttpRequests(request->request.anyRequest().permitAll());
+		httpSecurity.authorizeHttpRequests(
+				request->request.requestMatchers("/api/route3","/api/route4").hasRole("GUEST")
+				                .requestMatchers("/api/route1","/api/route2").hasRole("ADMIN")
+				                .anyRequest().permitAll()
+				);
 		
 		
 		httpSecurity.formLogin(Customizer.withDefaults()); //for browser
-		httpSecurity.httpBasic(Customizer.withDefaults()); // for post man testing username pwd by url
+		//httpSecurity.httpBasic(Customizer.withDefaults()); // for post man testing username pwd by url
 		
 		return httpSecurity.build();
 	}
