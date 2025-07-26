@@ -1,12 +1,18 @@
 package com.app.security.config;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,12 +20,19 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+	@Autowired
+	private JwtAuthenticationFilter filter;
+	@Autowired
+	private JwtAuthenticationEntryPoint entryPoint;
+	
+	
 	/*
     @Bean
     public UserDetailsService userDetailsService(){
@@ -49,14 +62,21 @@ public class SecurityConfig {
 		/*
 		httpSecurity.authorizeHttpRequests(request->request.requestMatchers("/api/route2").permitAll()
 				.requestMatchers("/users/**").permitAll()
-				.requestMatchers(HttpMethod.POST,"/products").authenticated()
+				.requestMatchers(HttpMethod.POST,"/products").authenticated()     
 				.anyRequest().authenticated());
 		*/
 		
 		//httpSecurity.authorizeHttpRequests(request->request.anyRequest().permitAll());
+		
+		//disable cors and csrf 
+		httpSecurity.cors(httpSecurityCorsConfigurer->httpSecurityCorsConfigurer.disable());
+		httpSecurity.csrf(httpSecurityCsrfConfigurer->httpSecurityCsrfConfigurer.disable());
+		
 		httpSecurity.authorizeHttpRequests(
 				request->request.requestMatchers("/api/route3","/api/route4").hasRole("GUEST")
 				                .requestMatchers("/api/route1","/api/route2").hasRole("ADMIN")
+				                .requestMatchers(HttpMethod.POST,"/auth/generate-token").permitAll()
+				                .requestMatchers("/auth/**").authenticated()
 				                .anyRequest().permitAll()
 				);
 		
@@ -64,6 +84,9 @@ public class SecurityConfig {
 		httpSecurity.formLogin(Customizer.withDefaults()); //for browser
 		//httpSecurity.httpBasic(Customizer.withDefaults()); // for post man testing username pwd by url
 		
+		httpSecurity.exceptionHandling(ex->ex.authenticationEntryPoint(entryPoint));
+		httpSecurity.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		httpSecurity.addFilterBefore(filter,UsernamePasswordAuthenticationFilter.class);
 		return httpSecurity.build();
 	}
 	
@@ -71,4 +94,15 @@ public class SecurityConfig {
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+	
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
+		return builder.getAuthenticationManager();
+	}
+	
+	@Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
+	
 }
