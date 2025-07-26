@@ -22,6 +22,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.app.security.constant.AppConstants;
+
 @Configuration
 @EnableWebSecurity(debug = true)
 @EnableMethodSecurity(prePostEnabled = true)
@@ -73,7 +75,7 @@ public class SecurityConfig {
 		httpSecurity.csrf(httpSecurityCsrfConfigurer->httpSecurityCsrfConfigurer.disable());
 		
 		httpSecurity.authorizeHttpRequests(
-				request->request.requestMatchers("/api/route3","/api/route4").hasRole("GUEST")
+				request->request.requestMatchers("/api/route3","/api/route4").hasRole(AppConstants.ROLE_GUEST)
 				                .requestMatchers("/api/route1","/api/route2").hasRole("ADMIN")
 				                .requestMatchers(HttpMethod.POST,"/auth/generate-token").permitAll()
 				                .requestMatchers("/auth/**").authenticated()

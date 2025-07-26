@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.app.security.constant.AppConstants;
 import com.app.security.entity.Role;
 import com.app.security.entity.User;
 import com.app.security.repo.RoleRepository;
@@ -32,19 +33,19 @@ public class SpringSecurityProjectUsingDbApplication implements CommandLineRunne
 	@Override
 	public void run(String... args) throws Exception {
 		
-		Role role1 = roleRepository.findByName("ROLE_ADMIN").orElse(null);		
-		Role role2 = roleRepository.findByName("ROLE_GUEST").orElse(null);		
+		Role role1 = roleRepository.findByName("ROLE_"+AppConstants.ROLE_ADMIN).orElse(null);		
+		Role role2 = roleRepository.findByName("ROLE_"+AppConstants.ROLE_GUEST).orElse(null);		
 		if(role1==null) {
 			//ROLE_ADMIN
 			role1 = new Role();
-			role1.setName("ROLE_ADMIN");
+			role1.setName("ROLE_"+AppConstants.ROLE_ADMIN);
 			role1.setRoleId(UUID.randomUUID().toString());
 			roleRepository.save(role1);
 		}
 		if(role2==null) {
 			//ROLE_GUEST
 			role2 = new Role();
-			role2.setName("ROLE_GUEST");
+			role2.setName("ROLE_"+AppConstants.ROLE_GUEST);
 			role2.setRoleId(UUID.randomUUID().toString());
 			roleRepository.save(role2);
 		}
